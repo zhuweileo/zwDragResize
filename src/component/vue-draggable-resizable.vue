@@ -221,7 +221,7 @@
                 this.elmW = this.width
                 this.elmH = this.height
 
-                this.$emit('resizing', this.left, this.top, this.width, this.height)
+                this.$emit('resizing', {left:this.left, top:this.top, width:this.width, height:this.height})
             },
             elmDown: function (e) {
                 const target = e.target || e.srcElement
@@ -330,7 +330,7 @@
                         }
                     }
 
-                    this.$emit('resizing', this.left, this.top, this.width, this.height)
+                    this.$emit('resizing', {left:this.left, top:this.top, width:this.width, height:this.height})
                 }
 
                 window.requestAnimationFrame(animate)
@@ -388,7 +388,7 @@
                     this.width = (Math.round(this.elmW / this.grid[0]) * this.grid[0])
                     this.height = (Math.round(this.elmH / this.grid[1]) * this.grid[1])
 
-                    this.$emit('resizing', this.left, this.top, this.width, this.height)
+                    this.$emit('resizing', {left:this.left, top:this.top, width:this.width, height:this.height})
                 } else if (this.dragging) {
                     if (this.parent) {
                         if (this.elmX + dX < this.parentX) this.mouseOffX = (dX - (diffX = this.parentX - this.elmX))
@@ -419,7 +419,7 @@
                 this.handle = null
                 if (this.resizing) {
                     this.resizing = false
-                    this.$emit('resizestop', this.left, this.top, this.width, this.height)
+                    this.$emit('resizestop', {left:this.left, top:this.top, width:this.width, height:this.height})
                 }
                 if (this.dragging) {
                     this.dragging = false
