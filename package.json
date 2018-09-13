@@ -1,6 +1,6 @@
 {
   "name": "zw-drag-resize",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "vue component drag resize",
   "main": "dist/index.js",
   "scripts": {
@@ -9,7 +9,7 @@
   },
   "author": "zhuwei",
   "license": "MIT",
-  "dependencies": {
+  "devDependencies": {
     "@babel/core": "^7.0.0",
     "@babel/preset-env": "^7.0.0",
     "babel-loader": "^8.0.0",
