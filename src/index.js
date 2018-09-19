@@ -1,1 +1,1 @@
-export {default} from './component/vue-draggable-resizable'
+export {default} from './component/zw-drag-resize'
