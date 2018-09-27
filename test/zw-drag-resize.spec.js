@@ -466,8 +466,7 @@ describe('zw-drag-resize.vue', () => {
           to: {pageX: fromX + 10, pageY: fromY + 10}
         }, function () {
           Vue.nextTick().then(function () {
-            expect(resizing.called).to.equal(true);
-            expect(resizing.args[resizing.args.length-1][0]).to.eql({top: 0, left: 0, height: 110, width: 110});
+            sinon.assert.calledWith(resizing, {top: 0, left: 0, height: 110, width: 110});
             done()
           })
         })
@@ -505,9 +504,7 @@ describe('zw-drag-resize.vue', () => {
           Vue.nextTick().then(function () {
             wrapper.trigger('mouseup')
             Vue.nextTick().then(function () {
-              // sinon.assert.calledWith(resizestop, 0, 0, 110, 110)
-              expect(resizestop.called).to.equal(true);
-              expect(resizestop.args[resizestop.args.length-1][0]).to.eql({top: 0, left: 0, height: 110, width: 110});
+              sinon.assert.calledWith(resizestop,{top: 0, left: 0, height: 110, width: 110})
               done()
             })
           })
@@ -515,4 +512,274 @@ describe('zw-drag-resize.vue', () => {
       })
     })
   })
+
+
+  /*******************
+   * Draggable props *
+   *******************/
+
+  describe('Draggable props', function () {
+    it('should have "draggable" class by default', function () {
+      const vm = mount(DragResize).vm
+      expect(vm.$el.className).to.contain('draggable')
+    })
+
+    it('should not have "draggable" class if draggable is disabled', function () {
+      const vm = mount(DragResize, {
+        propsData:{
+          draggable: false
+        }
+      }).vm;
+      expect(vm.$el.className).to.not.contain('draggable')
+    })
+  })
+
+  /********************
+   * Draggable events *
+   ********************/
+
+  describe('Draggable events', function () {
+    it('should activate dragging on an element by clicking it', function () {
+      const wrapper = mount(DragResize)
+      const vm = wrapper.vm;
+
+      wrapper.trigger('mousedown')
+
+      expect(vm.dragging).to.be.true
+    })
+  })
+
+
+  /***********************
+   * Draggable functions *
+   ***********************/
+
+  describe('Draggable functions', function () {
+    it('should drag the element', function (done) {
+      const wrapper = mount(DragResize, {
+        propsData:{
+          w: 100,
+          h: 100
+        }
+      });
+
+      const vm = wrapper.vm;
+
+      wrapper.trigger('mousedown');
+      expect(vm.$el.className).to.have.string('dragging')
+
+      Vue.config.errorHandler = done;
+      Vue.nextTick().then(function () {
+        vm.lastMouseX = 50
+        vm.lastMouseY = 50
+
+        Syn.drag(vm.$el, {
+          from: {pageX: 50, pageY: 50},
+          to: {pageX: 60, pageY: 60}
+        }, function () {
+
+          Vue.nextTick().then(function () {
+            expect(vm.$el.style.top).to.equal('10px')
+            expect(vm.$el.style.left).to.equal('10px')
+            expect(vm.$data.dragging).to.equal(false)
+            done()
+          })
+        })
+      })
+    })
+
+    it('should emit "dragging" event while dragging the element', function (done) {
+      const dragging = sinon.spy()
+
+      const wrapper = mount(DragResize, {
+        propsData:{
+          w: 100,
+          h: 100
+        },
+        listeners:{
+          dragging
+        }
+      });
+      const vm = wrapper.vm;
+
+      wrapper.trigger('mousedown');
+
+      Vue.config.errorHandler = done;
+      Vue.nextTick().then(function () {
+        vm.lastMouseX = 50
+        vm.lastMouseY = 50
+
+        Syn.drag(vm.$el, {
+          from: {pageX: 50, pageY: 50},
+          to: {pageX: 60, pageY: 60}
+        }, function () {
+          Vue.nextTick().then(function () {
+            sinon.assert.calledWith(dragging, {left: 10, top:10});
+            done()
+          })
+        })
+      })
+    })
+
+    it('should emit "dragstop" event while stopping dragging the element', function (done) {
+      const dragstop = sinon.spy()
+
+      const wrapper = mount(DragResize, {
+        propsData:{
+          w: 100,
+          h: 100
+        },
+        listeners:{
+          dragstop
+        }
+      })
+      const vm = wrapper.vm;
+
+      wrapper.trigger('mousedown')
+
+      Vue.config.errorHandler = done;
+      Vue.nextTick().then(function () {
+        vm.lastMouseX = 50
+        vm.lastMouseY = 50
+
+        Syn.drag(vm.$el, {
+          from: {pageX: 50, pageY: 50},
+          to: {pageX: 60, pageY: 60}
+        }, function () {
+          Vue.nextTick().then(function () {
+            wrapper.trigger('mouseup');
+            Vue.nextTick().then(function () {
+              sinon.assert.calledWith(dragstop, {top:10, left:10})
+              done()
+            })
+          })
+        })
+      })
+    })
+
+    it('should drag the component only by the dragHandle selector', function () {
+      const activated = sinon.spy()
+
+      const wrapper = mount(DragResize, {
+        propsData:{
+          dragHandle: '.drag'
+        },
+        listeners:{
+          activated
+        },
+        slots:{
+          default: '<div class="drag">Handle</div>'
+        }
+      });
+      const vm = wrapper.vm;
+
+      wrapper.trigger('mousedown');
+
+      expect(vm.$data.enabled).to.equal(false)
+
+      wrapper.find('.drag').trigger('mousedown')
+
+      expect(vm.$data.enabled).to.equal(true)
+
+      sinon.assert.calledWith(activated)
+    })
+
+    it('should not drag the component by the dragCancel selector', function () {
+      const activated = sinon.spy()
+
+      const wrapper = mount(DragResize, {
+        propsData:{
+          dragCancel: '.cancel'
+        },
+        listeners:{
+          activated
+        },
+        slots:{
+          default:'<div class="cancel">Cancel</div>',
+        }
+      });
+      const vm = wrapper.vm;
+
+      wrapper.find('.cancel').trigger('mousedown')
+
+      expect(vm.$data.enabled).to.equal(false)
+
+      sinon.assert.notCalled(activated)
+
+      wrapper.trigger('mousedown')
+
+      expect(vm.$data.enabled).to.equal(true)
+    })
+  })
+
+  /*************************
+   * Double click function *
+   *************************/
+
+  describe('Double click function', function () {
+    it('should not maximize the element if parent prop is false', function (done) {
+      const resizing = sinon.spy()
+
+      const wrapper = mount(DragResize, {
+        propsData:{
+          x: 10,
+          y: 10,
+          w: 100,
+          h: 100,
+          parent: false,
+          maximize: true
+        },
+        listeners:{
+          resizing
+        },
+        attachToDocument: true,
+      });
+      const vm = wrapper.vm;
+
+      wrapper.trigger('dblclick')
+
+      Vue.config.errorHandler = done
+      Vue.nextTick().then(function () {
+        sinon.assert.calledOnce(resizing)
+        expect(vm.$el.style.top).to.equal('10px')
+        expect(vm.$el.style.left).to.equal('10px')
+        expect(vm.$el.style.width).to.equal('100px')
+        expect(vm.$el.style.height).to.equal('100px')
+        done()
+      })
+    })
+
+    it('should not maximize the element if maximize prop is false', function (done) {
+      const resizing = sinon.spy()
+
+      const wrapper = mount(DragResize, {
+        propsData:{
+          x: 10,
+          y: 10,
+          w: 100,
+          h: 100,
+          parent: true,
+          maximize: false
+        },
+        listeners:{
+          resizing
+        },
+        attachToDocument: true,
+      });
+      const vm = wrapper.vm
+
+      wrapper.trigger('dblclick')
+
+      Vue.config.errorHandler = done;
+      Vue.nextTick().then(function () {
+        sinon.assert.calledOnce(resizing)
+        expect(vm.$el.style.top).to.equal('10px')
+        expect(vm.$el.style.left).to.equal('10px')
+        expect(vm.$el.style.width).to.equal('100px')
+        expect(vm.$el.style.height).to.equal('100px')
+        done()
+      })
+    })
+  })
+
 });
