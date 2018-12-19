@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <title>Title</title>
+</head>
+<body>
+<div id="app">
+  <zw-drag-resize
+    :x="50"
+    :y="50"
+    :h="500"
+    :w="500"
+  >
+    <div style="height: 100%; background:#000;"></div>
+  </zw-drag-resize>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/vue@2.5.17/dist/vue.js"></script>
+<script src="../dist/index.js"></script>
+<script>
+  console.log(zwDragResize.default);
+  const app = new Vue({
+    el:'#app',
+    data:{
+      text: 'hello vue!',
+    },
+    components:{
+      'zw-drag-resize': zwDragResize.default,
+    }
+  })
+</script>
+</body>
+</html>
