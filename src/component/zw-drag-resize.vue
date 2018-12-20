@@ -161,6 +161,10 @@
       this.clientW = document.documentElement.clientWidth
       this.clientH = document.documentElement.clientHeight
 
+      const anchors = this.anchor.split('-');
+      this.hAnchor = anchors[0];
+      this.vAnchor = anchors[1];
+
     },
     mounted: function () {
       document.documentElement.addEventListener('mousemove', this.handleMove, true)
@@ -172,13 +176,19 @@
       document.documentElement.addEventListener('touchend touchcancel', this.deselect, true)
       document.documentElement.addEventListener('touchstart', this.handleUp, true)
 
-      // this.elmX = parseInt(this.$el.style.left)
-      // this.elmY = parseInt(this.$el.style.top)
       this.elmW = this.$el.offsetWidth || this.$el.clientWidth
       this.elmH = this.$el.offsetHeight || this.$el.clientHeight
 
-      this.elmX = this.clientW - this.elmW - parseInt(this.$el.style.right)
-      this.elmY = this.clientH - this.elmH - parseInt(this.$el.style.bottom)
+      // init elmX elmY
+      const initXY = {
+        top: parseInt(this.$el.style.top),
+        bottom: this.clientH - this.elmH - parseInt(this.$el.style.bottom),
+        left: parseInt(this.$el.style.left),
+        right: this.clientW - this.elmW - parseInt(this.$el.style.right)
+      };
+
+      this.elmX = initXY[this.hAnchor];
+      this.elmY = initXY[this.vAnchor];
 
       this.reviewDimensions()
     },
@@ -451,14 +461,19 @@
 
     computed: {
       style: function () {
+        /**
+         * anchor:'top-left'
+         * {
+         *   width,height,zIndex,
+         *   top,left,
+         * }
+         */
         return {
-          // top: this.top + 'px',
-          // left: this.left + 'px',
-          right: this.right + 'px',
-          bottom: this.bottom + 'px',
           width: this.width + 'px',
           height: this.height + 'px',
-          zIndex: this.zIndex
+          zIndex: this.zIndex,
+          [this.hAnchor]: this[this.hAnchor],
+          [this.vAnchor]: this[this.vAnchor],
         }
       }
     },
