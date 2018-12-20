@@ -90,6 +90,13 @@
           return valid
         }
       },
+      anchor:{
+        type: String,
+        default: 'top-left',
+        validator: function (val) {
+          return ['top-left','top-right', 'bottom-left', 'bottom-right'].indexOf(val) !== -1
+        }
+      },
       handles: {
         type: Array,
         default: function () {
@@ -150,6 +157,10 @@
 
       this.elmW = 0
       this.elmH = 0
+
+      this.clientW = document.documentElement.clientWidth
+      this.clientH = document.documentElement.clientHeight
+
     },
     mounted: function () {
       document.documentElement.addEventListener('mousemove', this.handleMove, true)
@@ -161,10 +172,13 @@
       document.documentElement.addEventListener('touchend touchcancel', this.deselect, true)
       document.documentElement.addEventListener('touchstart', this.handleUp, true)
 
-      this.elmX = parseInt(this.$el.style.left)
-      this.elmY = parseInt(this.$el.style.top)
+      // this.elmX = parseInt(this.$el.style.left)
+      // this.elmY = parseInt(this.$el.style.top)
       this.elmW = this.$el.offsetWidth || this.$el.clientWidth
       this.elmH = this.$el.offsetHeight || this.$el.clientHeight
+
+      this.elmX = this.clientW - this.elmW - parseInt(this.$el.style.right)
+      this.elmY = this.clientH - this.elmH - parseInt(this.$el.style.bottom)
 
       this.reviewDimensions()
     },
@@ -183,6 +197,8 @@
       return {
         top: this.y,
         left: this.x,
+        bottom: this.y,
+        right: this.x,
         width: this.w,
         height: this.h,
         resizing: false,
@@ -381,6 +397,8 @@
 
           this.left = (Math.round(this.elmX / this.grid[0]) * this.grid[0])
           this.top = (Math.round(this.elmY / this.grid[1]) * this.grid[1])
+          this.right = this.clientW - (this.elmX + this.elmW);
+          this.bottom = this.clientH - (this.elmY + this.elmH);
 
           this.width = (Math.round(this.elmW / this.grid[0]) * this.grid[0])
           this.height = (Math.round(this.elmH / this.grid[1]) * this.grid[1])
@@ -400,9 +418,12 @@
 
           if (this.axis === 'x' || this.axis === 'both') {
             this.left = (Math.round(this.elmX / this.grid[0]) * this.grid[0])
+            this.right = this.clientW - (this.elmX + this.elmW)
           }
           if (this.axis === 'y' || this.axis === 'both') {
             this.top = (Math.round(this.elmY / this.grid[1]) * this.grid[1])
+            this.bottom = this.clientH - (this.elmY + this.elmH);
+
           }
 
           this.$emit('dragging', {left: this.left, top: this.top})
@@ -431,8 +452,10 @@
     computed: {
       style: function () {
         return {
-          top: this.top + 'px',
-          left: this.left + 'px',
+          // top: this.top + 'px',
+          // left: this.left + 'px',
+          right: this.right + 'px',
+          bottom: this.bottom + 'px',
           width: this.width + 'px',
           height: this.height + 'px',
           zIndex: this.zIndex
