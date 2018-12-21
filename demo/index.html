@@ -11,6 +11,11 @@
     :y="50"
     :h="500"
     :w="500"
+    :anchor="'bottom-left'"
+    @resizing="resizing"
+    @dragging="dragging"
+    @resizestop="resizestop"
+    @dragstop="dragstop"
   >
     <div style="height: 100%; background:#000;"></div>
   </zw-drag-resize>
@@ -27,6 +32,20 @@
     },
     components:{
       'zw-drag-resize': zwDragResize.default,
+    },
+    methods:{
+      resizing(e){
+        console.log('resizing',e)
+      },
+      dragging(e){
+        console.log('dragging',e)
+      },
+      resizestop(e){
+        console.log('resizestop',e)
+      },
+      dragstop(e){
+        console.log('dragstop',e)
+      }
     }
   })
 </script>

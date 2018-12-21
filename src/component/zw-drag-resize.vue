@@ -161,9 +161,6 @@
       this.clientW = document.documentElement.clientWidth
       this.clientH = document.documentElement.clientHeight
 
-      const anchors = this.anchor.split('-');
-      this.hAnchor = anchors[0];
-      this.vAnchor = anchors[1];
 
     },
     mounted: function () {
@@ -204,6 +201,7 @@
     },
 
     data: function () {
+      const anchors = this.anchor.split('-');
       return {
         top: this.y,
         left: this.x,
@@ -215,7 +213,9 @@
         dragging: false,
         enabled: this.active,
         handle: null,
-        zIndex: this.z
+        zIndex: this.z,
+        hAnchor: anchors[1],
+        vAnchor: anchors[0],
       }
     },
 
@@ -244,7 +244,7 @@
         this.elmW = this.width
         this.elmH = this.height
 
-        this.$emit('resizing', {left: this.left, top: this.top, width: this.width, height: this.height})
+        this.$emit('resizing', {...this.getAttrByAnchor(), width: this.width, height: this.height})
       },
       elmDown: function (e) {
         const target = e.target || e.srcElement
@@ -353,7 +353,7 @@
             }
           }
 
-          this.$emit('resizing', {left: this.left, top: this.top, width: this.width, height: this.height})
+          this.$emit('resizing', {...this.getAttrByAnchor(), width: this.width, height: this.height})
         }
 
         window.requestAnimationFrame(animate)
@@ -413,7 +413,7 @@
           this.width = (Math.round(this.elmW / this.grid[0]) * this.grid[0])
           this.height = (Math.round(this.elmH / this.grid[1]) * this.grid[1])
 
-          this.$emit('resizing', {left: this.left, top: this.top, width: this.width, height: this.height})
+          this.$emit('resizing', {...this.getAttrByAnchor(), width: this.width, height: this.height})
         } else if (this.dragging) {
           if (this.parent) {
             if (this.elmX + dX < this.parentX) this.mouseOffX = (dX - (diffX = this.parentX - this.elmX))
@@ -436,7 +436,7 @@
 
           }
 
-          this.$emit('dragging', {left: this.left, top: this.top})
+          this.$emit('dragging', this.getAttrByAnchor())
         }
       },
       handleUp: function (e) {
@@ -447,16 +447,23 @@
         this.handle = null
         if (this.resizing) {
           this.resizing = false
-          this.$emit('resizestop', {left: this.left, top: this.top, width: this.width, height: this.height})
+          this.$emit('resizestop', {...this.getAttrByAnchor(), width: this.width, height: this.height})
         }
         if (this.dragging) {
           this.dragging = false
-          this.$emit('dragstop', {left: this.left, top: this.top})
+          this.$emit('dragstop', this.getAttrByAnchor())
         }
 
         this.elmX = this.left
         this.elmY = this.top
-      }
+      },
+      getAttrByAnchor(){
+        const {vAnchor,hAnchor} = this;
+        return {
+          [vAnchor]: this[vAnchor],
+          [hAnchor]: this[hAnchor],
+        }
+      },
     },
 
     computed: {
@@ -472,10 +479,10 @@
           width: this.width + 'px',
           height: this.height + 'px',
           zIndex: this.zIndex,
-          [this.hAnchor]: this[this.hAnchor],
-          [this.vAnchor]: this[this.vAnchor],
+          [this.hAnchor]: this[this.hAnchor] + 'px',
+          [this.vAnchor]: this[this.vAnchor] + 'px',
         }
-      }
+      },
     },
 
     watch: {
