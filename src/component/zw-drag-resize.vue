@@ -160,7 +160,10 @@
 
       this.clientW = document.documentElement.clientWidth
       this.clientH = document.documentElement.clientHeight
+      this.containerW = 0;
+      this.containerH = 0;
 
+      // console.log(this.getParent(),'created');
 
     },
     mounted: function () {
@@ -177,15 +180,26 @@
       this.elmH = this.$el.offsetHeight || this.$el.clientHeight
 
       // init elmX elmY
+      if(this.parent){
+        const parent = this.getParent()
+        this.containerW = parseInt(parent.clientWidth, 10)
+        this.containerH = parseInt(parent.clientHeight, 10)
+      } else {
+        this.containerH = this.clientH;
+        this.containerW = this.clientW;
+      }
+
       const initXY = {
         top: parseInt(this.$el.style.top),
-        bottom: this.clientH - this.elmH - parseInt(this.$el.style.bottom),
+        bottom: this.containerH - this.elmH - parseInt(this.$el.style.bottom),
         left: parseInt(this.$el.style.left),
-        right: this.clientW - this.elmW - parseInt(this.$el.style.right)
+        right: this.containerW - this.elmW - parseInt(this.$el.style.right)
       };
 
       this.elmX = initXY[this.hAnchor];
       this.elmY = initXY[this.vAnchor];
+      // console.log(this.elmX);
+      // console.log(this.elmY);
 
       this.reviewDimensions()
     },
@@ -201,6 +215,7 @@
     },
 
     data: function () {
+      // console.log(this.getParent(),'data');
       const anchors = this.anchor.split('-');
       return {
         top: this.y,
@@ -226,8 +241,11 @@
         if (this.minh > this.h) this.height = this.minh
 
         if (this.parent) {
-          const parentW = parseInt(this.$el.parentNode.clientWidth, 10)
-          const parentH = parseInt(this.$el.parentNode.clientHeight, 10)
+          // const parentW = parseInt(this.$el.parentNode.clientWidth, 10)
+          // const parentH = parseInt(this.$el.parentNode.clientHeight, 10)
+          const parent = this.getParent()
+          const parentW = parseInt(parent.clientWidth, 10)
+          const parentH = parseInt(parent.clientHeight, 10)
 
           this.parentW = parentW
           this.parentH = parentH
@@ -407,8 +425,9 @@
 
           this.left = (Math.round(this.elmX / this.grid[0]) * this.grid[0])
           this.top = (Math.round(this.elmY / this.grid[1]) * this.grid[1])
-          this.right = this.clientW - (this.elmX + this.elmW);
-          this.bottom = this.clientH - (this.elmY + this.elmH);
+
+          this.right = this.containerW - (this.elmX + this.elmW);
+          this.bottom = this.containerH - (this.elmY + this.elmH);
 
           this.width = (Math.round(this.elmW / this.grid[0]) * this.grid[0])
           this.height = (Math.round(this.elmH / this.grid[1]) * this.grid[1])
@@ -422,19 +441,21 @@
             if (this.elmY + dY < this.parentY) this.mouseOffY = (dY - (diffY = this.parentY - this.elmY))
             else if (this.elmY + this.elmH + dY > this.parentH) this.mouseOffY = (dY - (diffY = this.parentH - this.elmY - this.elmH))
           }
-          console.log('diffx',diffX)
+          // console.log('diffx',diffX)
           console.log('elmx',this.elmX)
+          // console.log('diffx',diffX)
+          console.log('elmx',this.elmY)
 
           this.elmX += diffX
           this.elmY += diffY
 
           if (this.axis === 'x' || this.axis === 'both') {
             this.left = (Math.round(this.elmX / this.grid[0]) * this.grid[0])
-            this.right = this.clientW - (this.elmX + this.elmW)
+            this.right = this.containerW - (this.elmX + this.elmW)
           }
           if (this.axis === 'y' || this.axis === 'both') {
             this.top = (Math.round(this.elmY / this.grid[1]) * this.grid[1])
-            this.bottom = this.clientH - (this.elmY + this.elmH);
+            this.bottom = this.containerH - (this.elmY + this.elmH);
 
           }
 
@@ -458,9 +479,9 @@
 
         const initXY = {
           top: parseInt(this.$el.style.top),
-          bottom: this.clientH - this.elmH - parseInt(this.$el.style.bottom),
+          bottom: this.containerH - this.elmH - parseInt(this.$el.style.bottom),
           left: parseInt(this.$el.style.left),
-          right: this.clientW - this.elmW - parseInt(this.$el.style.right)
+          right: this.containerW - this.elmW - parseInt(this.$el.style.right)
         };
 
         this.elmX = initXY[this.hAnchor];
@@ -473,6 +494,22 @@
           [hAnchor]: this[hAnchor],
         }
       },
+      getParent(){// 找到元素相对与哪个父元素进行的定位
+        const self = this.$el;
+
+        let target =  self.parentElement
+
+        let posi = window.getComputedStyle(target).position
+
+        while(posi === 'static'){
+          target = target.parentElement;
+          if(target.tagName === 'HTML')  break;
+          posi = window.getComputedStyle(target).position;
+          // console.log(target)
+        }
+        // console.log(target)
+        return target
+      }
     },
 
     computed: {
@@ -512,7 +549,7 @@
       x(val) {
         const initX = {
           left: parseInt(this.$el.style.left),
-          right: this.clientW - this.elmW - parseInt(this.$el.style.right)
+          right: this.containerW - this.elmW - parseInt(this.$el.style.right)
         };
         const {hAnchor} = this;
         this[hAnchor] = val;
@@ -521,7 +558,7 @@
       y(val) {
         const initY = {
           top: parseInt(this.$el.style.top),
-          bottom: this.clientH - this.elmH - parseInt(this.$el.style.bottom),
+          bottom: this.containerH - this.elmH - parseInt(this.$el.style.bottom),
         };
         const {vAnchor} = this;
         this[vAnchor] = val;

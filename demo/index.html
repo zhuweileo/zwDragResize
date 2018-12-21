@@ -7,6 +7,17 @@
     .action{
 
     }
+    #app{
+      position: relative;
+    }
+    .play-ground{
+      position: absolute;
+      width: 500px;
+      height: 500px;
+      top: 100px;
+      left: 100px;
+      border: 1px solid #F6C6CE;
+    }
   </style>
 </head>
 <body>
@@ -19,19 +30,23 @@
     <input type="number" :value="y" @change="onYinput">
   </div>
 
-  <zw-drag-resize
-    :x="x"
-    :y="y"
-    :h="500"
-    :w="500"
-    :anchor="'bottom-right'"
-    @resizing="resizing"
-    @dragging="dragging"
-    @resizestop="resizestop"
-    @dragstop="dragstop"
-  >
-    <div style="height: 100%; background:#000;"></div>
-  </zw-drag-resize>
+  <div class="play-ground">
+    <zw-drag-resize
+            :x="50"
+            :y="50"
+            :h="100"
+            :w="100"
+            :parent="true"
+            :anchor="'bottom-right'"
+            @resizing="resizing"
+            @dragging="dragging"
+            @resizestop="resizestop"
+            @dragstop="dragstop"
+    >
+      <div style="height: 100%; background:#000;"></div>
+    </zw-drag-resize>
+  </div>
+
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/vue@2.5.17/dist/vue.js"></script>
