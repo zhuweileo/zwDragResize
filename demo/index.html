@@ -3,15 +3,28 @@
 <head>
   <meta charset="UTF-8">
   <title>Title</title>
+  <style>
+    .action{
+
+    }
+  </style>
 </head>
 <body>
 <div id="app">
+
+  <div class="action">
+    <label for="">x</label>
+    <input type="number" :value="x" @change="onXinput">
+    <label for="">y</label>
+    <input type="number" :value="y" @change="onYinput">
+  </div>
+
   <zw-drag-resize
-    :x="50"
-    :y="50"
+    :x="x"
+    :y="y"
     :h="500"
     :w="500"
-    :anchor="'bottom-left'"
+    :anchor="'bottom-right'"
     @resizing="resizing"
     @dragging="dragging"
     @resizestop="resizestop"
@@ -24,28 +37,37 @@
 <script src="https://cdn.jsdelivr.net/npm/vue@2.5.17/dist/vue.js"></script>
 <script src="../dist/index.js"></script>
 <script>
-  console.log(zwDragResize.default);
+  // console.log(zwDragResize.default);
   const app = new Vue({
     el:'#app',
     data:{
-      text: 'hello vue!',
+      x: 50,
+      y: 50,
     },
     components:{
       'zw-drag-resize': zwDragResize.default,
     },
     methods:{
+      onXinput(e){
+        console.log(e)
+        this.x = e.target.valueAsNumber
+      },
+      onYinput(e){
+        console.log(e)
+        this.y = e.target.valueAsNumber
+      },
       resizing(e){
-        console.log('resizing',e)
+        // console.log('resizing',e)
       },
       dragging(e){
-        console.log('dragging',e)
+        // console.log('dragging',e)
       },
       resizestop(e){
-        console.log('resizestop',e)
+        // console.log('resizestop',e)
       },
       dragstop(e){
-        console.log('dragstop',e)
-      }
+        // console.log('dragstop',e)
+      },
     }
   })
 </script>

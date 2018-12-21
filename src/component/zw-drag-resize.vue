@@ -422,6 +422,8 @@
             if (this.elmY + dY < this.parentY) this.mouseOffY = (dY - (diffY = this.parentY - this.elmY))
             else if (this.elmY + this.elmH + dY > this.parentH) this.mouseOffY = (dY - (diffY = this.parentH - this.elmY - this.elmH))
           }
+          console.log('diffx',diffX)
+          console.log('elmx',this.elmX)
 
           this.elmX += diffX
           this.elmY += diffY
@@ -454,8 +456,15 @@
           this.$emit('dragstop', this.getAttrByAnchor())
         }
 
-        this.elmX = this.left
-        this.elmY = this.top
+        const initXY = {
+          top: parseInt(this.$el.style.top),
+          bottom: this.clientH - this.elmH - parseInt(this.$el.style.bottom),
+          left: parseInt(this.$el.style.left),
+          right: this.clientW - this.elmW - parseInt(this.$el.style.right)
+        };
+
+        this.elmX = initXY[this.hAnchor];
+        this.elmY = initXY[this.vAnchor];
       },
       getAttrByAnchor(){
         const {vAnchor,hAnchor} = this;
@@ -501,12 +510,22 @@
         this.width = val
       },
       x(val) {
-        this.left = val;
-        this.elmX = val;
+        const initX = {
+          left: parseInt(this.$el.style.left),
+          right: this.clientW - this.elmW - parseInt(this.$el.style.right)
+        };
+        const {hAnchor} = this;
+        this[hAnchor] = val;
+        this.elmX = initX[hAnchor];
       },
       y(val) {
-        this.top = val;
-        this.elmY = val;
+        const initY = {
+          top: parseInt(this.$el.style.top),
+          bottom: this.clientH - this.elmH - parseInt(this.$el.style.bottom),
+        };
+        const {vAnchor} = this;
+        this[vAnchor] = val;
+        this.elmY = initY[vAnchor];
       }
     }
   }
