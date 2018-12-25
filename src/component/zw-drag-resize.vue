@@ -180,26 +180,8 @@
       this.elmH = this.$el.offsetHeight || this.$el.clientHeight
 
       // init elmX elmY
-      if(this.parent){
-        const parent = this.getParent()
-        this.containerW = parseInt(parent.clientWidth, 10)
-        this.containerH = parseInt(parent.clientHeight, 10)
-      } else {
-        this.containerH = this.clientH;
-        this.containerW = this.clientW;
-      }
-
-      const initXY = {
-        top: parseInt(this.$el.style.top),
-        bottom: this.containerH - this.elmH - parseInt(this.$el.style.bottom),
-        left: parseInt(this.$el.style.left),
-        right: this.containerW - this.elmW - parseInt(this.$el.style.right)
-      };
-
-      this.elmX = initXY[this.hAnchor];
-      this.elmY = initXY[this.vAnchor];
-      // console.log(this.elmX);
-      // console.log(this.elmY);
+      this.updateContainerWH()
+      this.updateElmXY()
 
       this.reviewDimensions()
     },
@@ -396,6 +378,9 @@
         let dX = diffX
         let dY = diffY
 
+        this.updateContainerWH()
+        this.updateElmXY()
+
         if (this.resizing) {
           if (this.handle.indexOf('t') >= 0) {
             if (this.elmH - dY < this.minh) this.mouseOffY = (dY - (diffY = this.elmH - this.minh))
@@ -426,6 +411,7 @@
           this.left = (Math.round(this.elmX / this.grid[0]) * this.grid[0])
           this.top = (Math.round(this.elmY / this.grid[1]) * this.grid[1])
 
+          // this.updateContainerWH();
           this.right = this.containerW - (this.elmX + this.elmW);
           this.bottom = this.containerH - (this.elmY + this.elmH);
 
@@ -441,14 +427,15 @@
             if (this.elmY + dY < this.parentY) this.mouseOffY = (dY - (diffY = this.parentY - this.elmY))
             else if (this.elmY + this.elmH + dY > this.parentH) this.mouseOffY = (dY - (diffY = this.parentH - this.elmY - this.elmH))
           }
-          // console.log('diffx',diffX)
-          console.log('elmx',this.elmX)
-          // console.log('diffx',diffX)
-          console.log('elmx',this.elmY)
+
+          // console.log('elmx',this.elmX)
+          // console.log('elmx',this.elmY)
 
           this.elmX += diffX
           this.elmY += diffY
 
+          // this.updateContainerWH();
+          this.right = this.containerW - (this.elmX + this.elmW);
           if (this.axis === 'x' || this.axis === 'both') {
             this.left = (Math.round(this.elmX / this.grid[0]) * this.grid[0])
             this.right = this.containerW - (this.elmX + this.elmW)
@@ -456,7 +443,6 @@
           if (this.axis === 'y' || this.axis === 'both') {
             this.top = (Math.round(this.elmY / this.grid[1]) * this.grid[1])
             this.bottom = this.containerH - (this.elmY + this.elmH);
-
           }
 
           this.$emit('dragging', this.getAttrByAnchor())
@@ -477,15 +463,7 @@
           this.$emit('dragstop', this.getAttrByAnchor())
         }
 
-        const initXY = {
-          top: parseInt(this.$el.style.top),
-          bottom: this.containerH - this.elmH - parseInt(this.$el.style.bottom),
-          left: parseInt(this.$el.style.left),
-          right: this.containerW - this.elmW - parseInt(this.$el.style.right)
-        };
-
-        this.elmX = initXY[this.hAnchor];
-        this.elmY = initXY[this.vAnchor];
+        this.updateElmXY()
       },
       getAttrByAnchor(){
         const {vAnchor,hAnchor} = this;
@@ -494,9 +472,36 @@
           [hAnchor]: this[hAnchor],
         }
       },
+      updateContainerWH(){
+        if(this.parent){
+          const parent = this.getParent()
+          this.containerW = parseInt(parent.clientWidth, 10)
+          this.containerH = parseInt(parent.clientHeight, 10)
+        } else {
+          this.containerH = this.clientH;
+          this.containerW = this.clientW;
+        }
+      },
+      updateElmX(){
+        const initX = {
+          left: parseInt(this.$el.style.left),
+          right: this.containerW - this.elmW - parseInt(this.$el.style.right)
+        };
+        this.elmX = initX[this.hAnchor];
+      },
+      updateElmY(){
+        const initY = {
+          top: parseInt(this.$el.style.top),
+          bottom: this.containerH - this.elmH - parseInt(this.$el.style.bottom),
+        };
+        this.elmY = initY[this.vAnchor];
+      },
+      updateElmXY(){
+        this.updateElmX();
+        this.updateElmY();
+      },
       getParent(){// 找到元素相对与哪个父元素进行的定位
         const self = this.$el;
-
         let target =  self.parentElement
 
         let posi = window.getComputedStyle(target).position
@@ -505,9 +510,7 @@
           target = target.parentElement;
           if(target.tagName === 'HTML')  break;
           posi = window.getComputedStyle(target).position;
-          // console.log(target)
         }
-        // console.log(target)
         return target
       }
     },
@@ -547,22 +550,14 @@
         this.width = val
       },
       x(val) {
-        const initX = {
-          left: parseInt(this.$el.style.left),
-          right: this.containerW - this.elmW - parseInt(this.$el.style.right)
-        };
         const {hAnchor} = this;
         this[hAnchor] = val;
-        this.elmX = initX[hAnchor];
+        this.updateElmX()
       },
       y(val) {
-        const initY = {
-          top: parseInt(this.$el.style.top),
-          bottom: this.containerH - this.elmH - parseInt(this.$el.style.bottom),
-        };
         const {vAnchor} = this;
         this[vAnchor] = val;
-        this.elmY = initY[vAnchor];
+        this.updateElmY()
       }
     }
   }
