@@ -26,6 +26,8 @@
 
 <script>
   import {matchesSelectorToParentElements} from '../utils/dom'
+  import {RefLine} from '../utils/refline'
+  const refline = new RefLine({gap: 15});
 
   export default {
     replace: true,
@@ -163,6 +165,7 @@
       this.containerW = 0;
       this.containerH = 0;
 
+      this.lastPos = {top: null, left: null}
       // console.log(this.getParent(),'created');
 
     },
@@ -381,6 +384,9 @@
         this.updateContainerWH()
         this.updateElmXY()
 
+        //显示标尺
+        if(this.dragging || this.resizing) refline.check(this.$el,'.vdr');
+
         if (this.resizing) {
           if (this.handle.indexOf('t') >= 0) {
             if (this.elmH - dY < this.minh) this.mouseOffY = (dY - (diffY = this.elmH - this.minh))
@@ -435,7 +441,7 @@
           this.elmY += diffY
 
           // this.updateContainerWH();
-          this.right = this.containerW - (this.elmX + this.elmW);
+          // this.right = this.containerW - (this.elmX + this.elmW);
           if (this.axis === 'x' || this.axis === 'both') {
             this.left = (Math.round(this.elmX / this.grid[0]) * this.grid[0])
             this.right = this.containerW - (this.elmX + this.elmW)
@@ -454,6 +460,22 @@
           this.lastMouseY = e.changedTouches[0].clientY
         }
         this.handle = null
+
+        if(this.resizing || this.dragging){
+          const pos = refline.check(this.$el,'.vdr');
+          if(pos.left ) {this.elmX = pos.left;}
+          if(pos.top) {this.elmY = pos.top;}
+
+          if (this.axis === 'x' || this.axis === 'both') {
+            this.left = (Math.round(this.elmX / this.grid[0]) * this.grid[0])
+            this.right = this.containerW - (this.elmX + this.elmW)
+          }
+          if (this.axis === 'y' || this.axis === 'both') {
+            this.top = (Math.round(this.elmY / this.grid[1]) * this.grid[1])
+            this.bottom = this.containerH - (this.elmY + this.elmH);
+          }
+        }
+
         if (this.resizing) {
           this.resizing = false
           this.$emit('resizestop', {...this.getAttrByAnchor(), width: this.width, height: this.height})
@@ -558,6 +580,7 @@
         const {vAnchor} = this;
         this[vAnchor] = val;
         this.updateElmY()
+        console.log(val,'y');
       }
     }
   }
