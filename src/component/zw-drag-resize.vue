@@ -136,7 +136,10 @@
       },
       maximize: {
         type: Boolean, default: false
-      }
+      },
+      refline: {
+        type: Boolean, default: false
+      },
     },
 
     created: function () {
@@ -381,11 +384,14 @@
         let dX = diffX
         let dY = diffY
 
-        this.updateContainerWH()
-        this.updateElmXY()
+        if (this.dragging || this.resizing) {
+          this.updateContainerWH()
+          this.updateElmXY()
 
-        //显示标尺
-        if(this.dragging || this.resizing) refline.check(this.$el,'.vdr');
+          //显示标尺
+          if (this.refline) { refline.check(this.$el, '.vdr'); }
+        }
+
 
         if (this.resizing) {
           if (this.handle.indexOf('t') >= 0) {
@@ -462,9 +468,30 @@
         this.handle = null
 
         if(this.resizing || this.dragging){
-          const pos = refline.check(this.$el,'.vdr');
-          if(pos.left ) {this.elmX = pos.left;}
-          if(pos.top) {this.elmY = pos.top;}
+          if(this.refline){
+            const pos = refline.check(this.$el,'.vdr');
+            if(pos.left) {
+              if(this.parent){
+                const parent = this.getParent()
+                const leftBorder = window.getComputedStyle(parent).borderLeftWidth;
+                const {left,top} = parent.getBoundingClientRect()
+                this.elmX = pos.left - left - parseInt(leftBorder,10)
+              } else {
+                this.elmX = pos.left;
+              }
+            }
+            if(pos.top) {
+              if(this.parent){
+                const parent = this.getParent()
+                const topBorder = window.getComputedStyle(parent).borderTopWidth;
+                const {left,top} = parent.getBoundingClientRect()
+                this.elmY = pos.top - top - parseInt(topBorder,10)
+              } else {
+                this.elmY = pos.top;
+              }
+            }
+            refline.uncheck();
+          }
 
           if (this.axis === 'x' || this.axis === 'both') {
             this.left = (Math.round(this.elmX / this.grid[0]) * this.grid[0])
@@ -522,18 +549,8 @@
         this.updateElmX();
         this.updateElmY();
       },
-      getParent(){// 找到元素相对与哪个父元素进行的定位
-        const self = this.$el;
-        let target =  self.parentElement
-
-        let posi = window.getComputedStyle(target).position
-
-        while(posi === 'static'){
-          target = target.parentElement;
-          if(target.tagName === 'HTML')  break;
-          posi = window.getComputedStyle(target).position;
-        }
-        return target
+      getParent() {// 找到元素相对与哪个父元素进行的定位
+        return this.$el.offsetParent;
       }
     },
 
@@ -567,20 +584,37 @@
       },
       h(val) {
         this.height = val
+        this.elmH = val
+        this.$emit('resizestop', {...this.getAttrByAnchor(), width: this.width, height: this.height})
       },
       w(val) {
         this.width = val
+        this.elmW = val
+        this.$emit('resizestop', {...this.getAttrByAnchor(), width: this.width, height: this.height})
       },
       x(val) {
         const {hAnchor} = this;
         this[hAnchor] = val;
         this.updateElmX()
+        this.$emit('dragstop', this.getAttrByAnchor())
       },
       y(val) {
         const {vAnchor} = this;
         this[vAnchor] = val;
         this.updateElmY()
-        console.log(val,'y');
+        this.$emit('dragstop', this.getAttrByAnchor())
+      },
+      anchor(val) {
+        const anchors = val.split('-');
+        this[anchors[0]] = this[this.vAnchor];
+        this[anchors[1]] = this[this.hAnchor];
+        this.vAnchor = anchors[0];
+        this.hAnchor = anchors[1];
+
+        // const anchors = val.split('-');
+        // this.vAnchor = anchors[0];
+        // this.hAnchor = anchors[1];
+        // this.$emit('anchorChange', this.getAttrByAnchor());
       }
     }
   }

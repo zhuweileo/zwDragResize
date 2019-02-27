@@ -16,49 +16,50 @@
     }
     .play-ground{
       position: absolute;
-      width: 50vw;
+      width: 1000px;
       height: 500px;
       top: 100px;
       left: 100px;
-      border: 1px solid #F6C6CE;
+      border: 5px solid #F6C6CE;
+      /*background: red;*/
     }
   </style>
 </head>
 <body>
 <div id="app">
 
-  <!--<div class="action">-->
-    <!--<label for="">x</label>-->
-    <!--<input type="number" :value="x" @change="onXinput">-->
-    <!--<label for="">y</label>-->
-    <!--<input type="number" :value="y" @change="onYinput">-->
-  <!--</div>-->
+  <div class="action">
+    <label for="">x</label>
+    <input type="number" :value="x" @change="onXinput">
+    <label for="">y</label>
+    <input type="number" :value="y" @change="onYinput">
+  </div>
 
-  <!--<div class="play-ground">-->
+  <div class="play-ground" ref="play">
     <zw-drag-resize
-            :x="300"
-            :y="300"
+            :x="0"
+            :y="0"
+            parent
+            refline
             ref="item"
     >
       <div style="height: 100%; background:#000;"></div>
     </zw-drag-resize>
     <zw-drag-resize
             ref="drag"
-            :x="600"
-            :y="320"
-            @dragging="dragging"
-            @dragstop="dragstop"
+            :x="700"
+            :y="100"
+            parent
+            refline
     >
-      <div style="height: 100%; background:#000;"></div>
+      <div style="height: 100%; background:#ccc;"></div>
     </zw-drag-resize>
-  <!--</div>-->
+  </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/vue@2.5.17/dist/vue.js"></script>
-<script src="refline.js"></script>
 <script src="../dist/index.js"></script>
 <script>
-  const refline = new RefLine({gap: 3});
 
   const app = new Vue({
     el:'#app',
@@ -72,6 +73,10 @@
     mounted(){
       // console.log(this.$refs.drag.$el);
       // console.log(this.$refs.item.$el.getBoundingClientRect())
+      const play = this.$refs.play;
+      console.log(this.$refs.play)
+      console.log(window.getComputedStyle(this.$refs.play).borderLeftWidth)
+      console.log(play.getBoundingClientRect());
     },
     methods:{
       onXinput(e){

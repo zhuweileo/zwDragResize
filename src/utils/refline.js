@@ -43,6 +43,10 @@ export class RefLine {
     let dragRect = dragNode.getBoundingClientRect()
 
     const pos = {};
+    const posList = {
+      left: [],
+      top: []
+    };
 
     this.uncheck()
     Array.from(checkNodes).forEach((item) => {
@@ -60,6 +64,7 @@ export class RefLine {
           // xt-top
           {
             isNearly : this._isNearly(dragRect.top, top),
+            gapValue: this._calGap(dragRect.top, top),
             lineNode : lines.xt,
             lineValue: top,
             dragValue: top
@@ -67,6 +72,7 @@ export class RefLine {
           // xt-bottom
           {
             isNearly : this._isNearly(dragRect.bottom, top),
+            gapValue : this._calGap(dragRect.bottom, top),
             lineNode : lines.xt,
             lineValue: top,
             dragValue: top - dragRect.height
@@ -74,6 +80,7 @@ export class RefLine {
           // xc
           {
             isNearly : this._isNearly(dragRect.top + dragHeightHalf, top + itemHeightHalf),
+            gapValue : this._calGap(dragRect.top + dragHeightHalf, top + itemHeightHalf),
             lineNode : lines.xc,
             lineValue: top + itemHeightHalf,
             dragValue: top + itemHeightHalf - dragHeightHalf
@@ -81,6 +88,7 @@ export class RefLine {
           // xb-top
           {
             isNearly : this._isNearly(dragRect.bottom, bottom),
+            gapValue : this._calGap(dragRect.bottom, bottom),
             lineNode : lines.xb,
             lineValue: bottom,
             dragValue: bottom - dragRect.height
@@ -88,6 +96,7 @@ export class RefLine {
           // xb-bottom
           {
             isNearly : this._isNearly(dragRect.top, bottom),
+            gapValue : this._calGap(dragRect.top, bottom),
             lineNode : lines.xb,
             lineValue: bottom,
             dragValue: bottom
@@ -98,6 +107,7 @@ export class RefLine {
           // yl-left
           {
             isNearly : this._isNearly(dragRect.left, left),
+            gapValue : this._calGap(dragRect.left, left),
             lineNode : lines.yl,
             lineValue: left,
             dragValue: left
@@ -105,6 +115,7 @@ export class RefLine {
           // yl-right
           {
             isNearly : this._isNearly(dragRect.right, left),
+            gapValue : this._calGap(dragRect.right, left),
             lineNode : lines.yl,
             lineValue: left,
             dragValue: left - dragRect.width
@@ -112,6 +123,7 @@ export class RefLine {
           // yc
           {
             isNearly : this._isNearly(dragRect.left + dragWidthHalf, left + itemWidthHalf),
+            gapValue : this._calGap(dragRect.left + dragWidthHalf, left + itemWidthHalf),
             lineNode : lines.yc,
             lineValue: left + itemWidthHalf,
             dragValue: left + itemWidthHalf - dragWidthHalf
@@ -119,6 +131,7 @@ export class RefLine {
           // yr-left
           {
             isNearly : this._isNearly(dragRect.right, right),
+            gapValue : this._calGap(dragRect.right, right),
             lineNode : lines.yr,
             lineValue: right,
             dragValue: right - dragRect.width
@@ -126,6 +139,7 @@ export class RefLine {
           // yr-right
           {
             isNearly : this._isNearly(dragRect.left, right),
+            gapValue : this._calGap(dragRect.left, right),
             lineNode : lines.yr,
             lineValue: right,
             dragValue: right
@@ -140,12 +154,25 @@ export class RefLine {
 
           item.classList.add('ref-line-active')
           // dragNode.style[key]           = `${condition.dragValue}px`
-          pos[key] = condition.dragValue
+          // pos[key] = condition.dragValue
           condition.lineNode.style[key] = `${condition.lineValue}px`
           condition.lineNode.show()
+
+          posList[key].push(condition);
         })
       }
     })
+
+    //取最近的参考线作为最终吸附结果
+    for(let key in posList){
+      if(posList[key].length){
+        let minPos = posList[key][0];
+        posList[key].forEach(function (pos) {
+          if(pos.gapValue <= minPos.gapValue){ minPos = pos }
+        });
+        pos[key] = minPos.dragValue;
+      }
+    }
     return pos;
   }
 
@@ -156,6 +183,10 @@ export class RefLine {
 
   _isNearly(dragValue, targetValue) {
     return Math.abs(dragValue - targetValue) <= this.options.gap
+  }
+
+  _calGap(dragValue, targetValue){
+    return Math.abs(dragValue - targetValue)
   }
 }
 
